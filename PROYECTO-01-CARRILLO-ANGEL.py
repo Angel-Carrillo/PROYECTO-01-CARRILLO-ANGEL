@@ -1426,3 +1426,393 @@ lifestore_searches = [
     [1032, 95],
     [1033, 95]
 ]
+
+"""
+Comienza el Módulo del Sistema
+"""
+#Uso de librería básica para contraseñas
+import getpass
+
+#Librería para tabular resultados
+from tabulate import tabulate 
+
+#Almacenamiento de usuarios y contraseñas; poco seguro pero aplicable al caso
+usrlist = open('usrlist.txt').read().splitlines()
+
+#Bienvenidad y primera solicitud al usuario
+print("Bienvenido a la tienda virtual LifeStore v1.0")
+eleccion = input("Escribe una opción 'login' o 'register': ")
+
+#Aplicación de bucle while para reiniciar solicitud de login sin salir
+while eleccion != "login" or "register":
+  #login
+    if eleccion == 'login':
+        print("Ingrese un nombre de usuario y contraseña")
+        usr = input("Usuario: ")
+        psw = getpass.getpass("Contraseña: ")
+        combo = usr + ':' + psw
+        if combo in usrlist:
+          
+            print(f"\nInició sesión con el nombre de usuario: {usr} \n\n'Derivado de la situación, la Gerencia de Ventas de LifeStore solicitó mostrar un análisis de la rotación de productos.'\n")          
+            while True:
+                print(f"{usr} selecciona la opción del reporte que deseas conocer:\n\n 1) Reporte de productos más vendidos y productos rezagados.\n 2) Reporte de productos por reseña en el servicio.\n 3) Reporte del total de ingresos y ventas promedio mensuales, total anual y meses con más ventas al año.\n Presiona x para salir.")
+                opcion=input()
+                if opcion=='1':
+                    print(f"\nReporte de productos más vendidos y productos rezagados\n")
+
+                    """ SECCIÓN 1
+                    1) Productos más vendidos y productos rezagados a partir del análisis de las categorías con menores ventas y categorías con menores búsquedas.
+                    """
+
+                    """
+                    Productos más vendidos y productos rezagados:
+                      1.1 Generar un listado de los 15 productos con mayores ventas.
+                    """
+
+                    #Lista total de productos agrupados con número total de ventas
+                    prod_mas = []
+                    #Variable para el conteo de venta
+                    cont = 0 
+
+                    #Función para enlistar productos y contabilizar el número de ventas
+                    for prod in lifestore_products:
+                      for vent in lifestore_sales:
+                        if prod[0] == (vent[1]) and vent[4]==0:
+                          cont +=1
+                      prod_mas.append([prod[0],cont])
+                      cont=0
+                    #Función burbuja para reordenar el listado anterior de mayor a menor tomando el valor listado en la columna 2 (cont) 
+                    for recorrido in range(1,len(prod_mas)):
+                      for posicion in range(len(prod_mas)-recorrido):
+                        if prod_mas[posicion][1] < prod_mas[posicion+1][1]:
+                          temp = prod_mas[posicion]
+                          prod_mas[posicion] = prod_mas[posicion + 1]
+                          prod_mas[posicion+1]=temp
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Lista de Venta de Productos - Top 15 (descartando devoluciones)')
+
+                    #Imprimir tabla de los 50 productos más vendidos
+                    print(tabulate(prod_mas[:15],headers=['#','Id_Prod','Ventas'],tablefmt='grid', showindex='always'))
+
+                    """
+                    Productos más vendidos y productos rezagados:
+                      1.2 Generar un listado de los 100 productos con mayor búsquedas.
+                    """
+
+                    #Lista total de productos agrupados con número total de búsquedas
+                    prod_bus = []
+                    #Variable para el conteo de búsquedas
+                    cont = 0 
+
+                    #Función para enlistar productos y contabilizar el número de búsquedas
+                    for prod in lifestore_products:
+                      for busq in lifestore_searches:
+                        if prod[0] == (busq[1]):
+                          cont +=1
+                      prod_bus.append([prod[0],cont])
+                      cont=0
+
+                    #Función burbuja para reordenar el listado anterior de mayor a menor tomando el valor listado en la columna 2 (cont) 
+                    for recorrido in range(1,len(prod_bus)):
+                      for posicion in range(len(prod_bus)-recorrido):
+                        if prod_bus[posicion][1] < prod_bus[posicion+1][1]:
+                          temp = prod_bus[posicion]
+                          prod_bus[posicion] = prod_bus[posicion + 1]
+                          prod_bus[posicion+1]=temp
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Lista de Productos con mayor búsqueda - Top 20')
+
+                    #Imprimir tabla de los 20 productos más buscados
+                    print(tabulate(prod_bus[:20],headers=['#','Id_Prod','# Búsqueda'],tablefmt='grid', showindex='always'))
+
+                    """
+                    Productos más vendidos y productos rezagados:
+                      1.3 Por categoría generar un listado con los 50 productos con menores ventas.
+                    """
+
+                    #Lista total de productos agrupados con número total de ventas
+                    prod_men = []
+                    #Lista de categorias
+                    categor=[]
+                    #Lista de ventas por categoría
+                    categ_vent=[]
+                    #Variable para el conteo de venta
+                    cont = 0 
+
+                    #Listar todas las categorias presentes en lifestore_products (sin duplicar)
+                    for cat in lifestore_products:
+                      if cat[3] not in categor:
+                        categor.append(cat[3])
+                    #print(categor)
+
+                    #Listar productos y contabilizar el número de ventas
+                    for prod in lifestore_products:
+                      for vent in lifestore_sales:
+                          if prod[0] == (vent[1]) and vent[4]==0:      
+                            cont +=1
+                      prod_men.append([prod[3],cont])
+                      cont=0
+                    #print(prod_men)
+
+                    #Cruzar lista de categorías con lista de productos con ventas (Merge)
+                    for i in categor:
+                      for p in prod_men:
+                        if p[0] == i:
+                          cont += p[1]
+                      categ_vent.append([i,cont])
+
+                    #Función burbuja para reordenar el listado anterior de menor a mayor tomando el valor listado en la columna 2 (cont) 
+                    for recorrido in range(1,len(categ_vent)):
+                      for posicion in range(len(categ_vent)-recorrido):
+                        if categ_vent[posicion][1] > categ_vent[posicion+1][1]:
+                          temp = categ_vent[posicion]
+                          categ_vent[posicion] = categ_vent[posicion + 1]
+                          categ_vent[posicion+1]=temp
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Lista de Ventas de Productos por Categoría de Menor a Mayor (descartando devoluciones)')
+
+                    #Imprimir tabla de los 50 productos más vendidos
+                    print(tabulate(categ_vent,headers=['#','Categ_Prod','Ventas'],tablefmt='grid', showindex='always'))
+
+                    """
+                    Productos más vendidos y productos rezagados:
+                      1.4 Por categoría, generar un listado con los 100 productos con menores búsquedas.
+                    """
+
+                    #Lista total de productos agrupados con número total de ventas
+                    prod_men = []
+                    #Lista de categorias
+                    categor=[]
+                    #Lista de ventas por categoría
+                    categ_vent=[]
+                    #Variable para el conteo de venta
+                    cont = 0 
+
+                    #Listar todas las categorias presentes en lifestore_products (sin duplicar)
+                    for cat in lifestore_products:
+                      if cat[3] not in categor:
+                        categor.append(cat[3])
+                    #print(categor)
+
+                    #Lista total de productos agrupados con número total de búsquedas
+                    prod_bus = []
+
+                    #Función para enlistar productos y contabilizar el número de búsquedas
+                    for prod in lifestore_products:
+                      for busq in lifestore_searches:
+                        if prod[0] == (busq[1]):
+                          cont +=1
+                      prod_bus.append([prod[3],cont])
+                      cont=0
+                    #print(prod_bus)
+
+                    #Cruzar lista de categorías con lista de productos con ventas (Merge)
+                    for i in categor:
+                      for p in prod_bus:
+                        if p[0] == i:
+                          cont += p[1]
+                      categ_vent.append([i,cont])
+
+                    #Función burbuja para reordenar el listado anterior de menor a mayor tomando el valor listado en la columna 2 (cont) 
+                    for recorrido in range(1,len(categ_vent)):
+                      for posicion in range(len(categ_vent)-recorrido):
+                        if categ_vent[posicion][1] > categ_vent[posicion+1][1]:
+                          temp = categ_vent[posicion]
+                          categ_vent[posicion] = categ_vent[posicion + 1]
+                          categ_vent[posicion+1]=temp
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Lista de Búsquedas de Productos por Categoría de Menor a Mayor')
+
+                    #Imprimir tabla de los 50 productos más vendidos
+                    print(tabulate(categ_vent,headers=['#','Categ_Prod','Búsquedas'],tablefmt='grid', showindex='always'))
+
+                elif opcion=='2':
+                    print(f"\nReporte de productos por reseña\n")
+                    
+                    """ SECCIÓN 2
+                    2) Productos por reseña en el servicio a partir del análisis de categorías con mayores ventas y categorías con mayores búsquedas.
+                    """
+
+                    """
+                    Productos por reseña en el servicio:
+                      2.1 Mostrar dos listados de 20 productos cada una, un listado para productos con las mejores reseñas y otro para las peores, considerando los productos con devolución.
+                    """
+
+                    #Lista total de productos agrupados con número total de reseñas
+                    prod_mas = []
+                    #Variable para el conteo de reseñas
+                    cont = 0 
+
+                    #Función para enlistar productos y contabilizar el número de reseñas
+                    for prod in lifestore_products:
+                      for vent in lifestore_sales:
+                        if prod[0] == (vent[1]) and vent[4]==0:
+                          cont +=vent[2]
+                      prod_mas.append([prod[0],cont])
+                      cont=0
+                    #Función (MEJORES RESEÑAS) burbuja para reordenar el listado anterior de mayor a menor tomando el valor listado en la columna 2 (cont) 
+                    for recorrido in range(1,len(prod_mas)):
+                      for posicion in range(len(prod_mas)-recorrido):
+                        if prod_mas[posicion][1] < prod_mas[posicion+1][1]:
+                          temp = prod_mas[posicion]
+                          prod_mas[posicion] = prod_mas[posicion + 1]
+                          prod_mas[posicion+1]=temp
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Lista de Mejores Reseñas de Productos - Top 10 (descartando devoluciones)')
+
+                    #Imprimir tabla de los 50 productos más vendidos
+                    print(tabulate(prod_mas[:10],headers=['#','Id_Prod','Ptos Total Reseñas'],tablefmt='grid', showindex='always'))
+
+                    #Función (PEORES RESEÑAS) burbuja para reordenar el listado anterior de mayor a menor tomando el valor listado en la columna 2 (cont) 
+                    for recorrido in range(1,len(prod_mas)):
+                      for posicion in range(len(prod_mas)-recorrido):
+                        if prod_mas[posicion][1] > prod_mas[posicion+1][1]:
+                          temp = prod_mas[posicion]
+                          prod_mas[posicion] = prod_mas[posicion + 1]
+                          prod_mas[posicion+1]=temp
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Lista de Peores Reseñas de Productos - Top 10 (descartando devoluciones)')
+
+                    #Imprimir tabla de los 50 productos más vendidos
+                    #El resultado muestra todos en 0 ya que solo toma los primeros 10 ordenador por id de producto
+                    print(tabulate(prod_mas[:10],headers=['#','Id_Prod','Ptos Total Reseñas'],tablefmt='grid', showindex='always'))                    
+
+                elif opcion=='3':
+                    print(f"\nTotal de ingresos y ventas promedio mensuales, total anual y meses con más ventas al año\n")
+
+                    """ SECCIÓN 3
+                    3) Sugerir una estrategia de productos a retirar del mercado así como sugerencia de cómo reducir la acumulación de inventario considerando los datos de ingresos y ventas mensuales.
+                    """
+
+                    """
+                      3.1 Total de ingresos y ventas promedio mensuales, total anual y meses con más ventas al año
+                    """
+
+                    #Total de ingresos de todos los productos vendidos
+                    total_ing = 0
+
+                    #Función para sumar los ingresos por venta de productos
+                    for prod in lifestore_products:
+                      for vent in lifestore_sales:
+                        if prod[0] == (vent[1]) and vent[4]==0:
+                          total_ing +=prod[2] #Sumarizamos el ingreso por producto vendido
+                    print(f"Total de Ingresos: {total_ing}\n")
+
+                    #Lista total de productos agrupados con número total de ventas
+                    prod_men = []
+                    #Lista de categorias
+                    meses=["01","02","03","04","05","06","07","08","09","10","11","12"]
+                    #Lista de ventas por categoría
+                    categ_vent=[]
+                    #Variable para el conteo de ingreso
+                    ing = 0 
+
+                    #Listar ventas de productos y contabilizar el ingreso
+                    for vent in lifestore_sales:
+                      for prod in lifestore_products:
+                          if prod[0] == (vent[1]) and vent[4]==0: #Ultima sentencia para descartar devoluciones     
+                            ing =prod[2]
+                            cat= prod[3]
+                      prod_men.append([vent[3],cat,ing])
+
+                    #print(prod_men[0][0][3:5]) #Pruebas para validar salida
+                    #print(prod_men[0:5]) #Pruebas para validar salida
+
+                    suma=0
+                    #Cruzar lista de categorías con lista de productos con ventas (Merge)
+                    for i in meses:
+                      for p in prod_men:
+                        #print(f"{i} Fecha: {p[0][3:5]}")
+                        if str(i) == str(p[0][3:5]):
+                          #print(i) #Pruebas para validar salida
+                          suma += p[2]
+                      categ_vent.append([i,suma])
+                      suma=0
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Ventas Mensuales de Productos (descartando devoluciones)')
+
+                    #Imprimir tabla de los 50 productos más vendidos
+                    print(tabulate(categ_vent,headers=['Mes','Total Ventas'],tablefmt='grid'))
+
+
+                    #Función burbuja para reordenar el listado anterior de menor a mayor tomando el valor listado en la columna 2 (cont) 
+                    for recorrido in range(1,len(categ_vent)):
+                      for posicion in range(len(categ_vent)-recorrido):
+                        if categ_vent[posicion][1] < categ_vent[posicion+1][1]:
+                          temp = categ_vent[posicion]
+                          categ_vent[posicion] = categ_vent[posicion + 1]
+                          categ_vent[posicion+1]=temp
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Productos con más Ventas - Top 5 (descartando devoluciones)')
+
+                    #Imprimir tabla de los 50 productos más vendidos
+                    print(tabulate(categ_vent[:5],headers=['Mes','Total Ventas'],tablefmt='grid'))
+
+                    #Lista total de productos agrupados con número total de ventas
+                    prod_mas = []
+                    #Variable para el conteo de venta
+                    cont = 0 
+
+                    #Función para enlistar productos y contabilizar el número de ventas
+                    for prod in lifestore_products:
+                      for vent in lifestore_sales:
+                        if prod[0] == (vent[1]) and vent[4]==0:
+                          cont +=1
+                      if cont == 0:
+                        prod_mas.append([prod[0],cont])
+                      cont=0
+                    #Función burbuja para reordenar el listado anterior de mayor a menor tomando el valor listado en la columna 2 (cont) 
+                    for recorrido in range(1,len(prod_mas)):
+                      for posicion in range(len(prod_mas)-recorrido):
+                        if prod_mas[posicion][1] > prod_mas[posicion+1][1]:
+                          temp = prod_mas[posicion]
+                          prod_mas[posicion] = prod_mas[posicion + 1]
+                          prod_mas[posicion+1]=temp
+
+                    #Imprimir titulo de la tabla señalando 
+                    print(f'Lista Productos con $0 Ventas que se recomienda como estrategia retiralos del mercado; tambien para reducir la acumulación de inventario se recomienda:')
+                    sin_venta=[]
+                    for pro in prod_mas:
+                      sin_venta.append(pro[0])
+                    print(sin_venta)
+
+                elif opcion=='x':
+                    exit()
+
+        else:
+            print("No existe registro o el nombre de usuario y contraseña son incorrectos")
+            continue
+  #registro
+    if eleccion == 'register':
+        usr_valid = True
+        print("Ingrese el nombre de usuario deseado")
+        usr_elegido = input("Usuario: ")
+        for combo in usrlist:
+            if usr_elegido in combo:
+                print("¡El nombre de usuario no está disponible! ¡Escoge otro!")
+                usr_valid = False
+        if usr_valid == True:
+            psw_elegido = getpass.getpass("Contraseña: ")
+            psw_elegido2 = getpass.getpass("Confirma la contraseña: ")
+            while psw_elegido != psw_elegido2:
+                print("La contraseña no coincide")
+                psw_elegido2 = getpass.getpass("Confirma la contraseña: ")
+            combo = usr_elegido + ":" + psw_elegido
+            f1 = open('usrlist.txt', 'a+')
+            f1.writable()
+            f1.write(combo + "\n")
+            f1.close()
+            print("¡Registro exitoso! Intente iniciar sesión.")
+            #Inicializamos de nuevo la lectura para que valide el nuevo registro
+            usrlist = open('usrlist.txt').read().splitlines()
+  # error
+    if eleccion != "login" or "register" and usr_valid == False:
+        eleccion = input("Escribe una opción 'login' o 'register': ")
